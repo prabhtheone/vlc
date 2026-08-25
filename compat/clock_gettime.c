@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/sysctl.h>
+#include <time.h>
 
 /**
  * Get the absolute time at which the system was booted
@@ -53,6 +54,28 @@ static int vlc__get_system_boottime(struct timeval *tv)
     if (ret != 0)
         return errno;
 
+    return 0;
+}
+
+/**
+ * Get the realtime clock as timeval
+ *
+ * \param[out] tv Timeval struct to write the realtime clock to
+ *
+ * \return 0 on success, else -1 and errno set
+ */
+static int vlc__get_realtime(struct timeval *tv)
+{
+    struct timespec ts;
+
+    if (timespec_get(&ts, TIME_UTC) != TIME_UTC)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+
+    tv->tv_sec = ts.tv_sec;
+    tv->tv_usec = ts.tv_nsec / 1000;
     return 0;
 }
 
@@ -89,7 +112,7 @@ static int vlc__get_monotonic(struct timeval *tv)
         if (ret != 0)
             return ret;
 
-        ret = gettimeofday(&currenttime, NULL);
+        ret = vlc__get_realtime(&currenttime);
         if (ret != 0)
             return ret;
 
@@ -112,7 +135,7 @@ int clock_gettime(clockid_t clock_id, struct timespec *tp)
             ret = vlc__get_monotonic(&tv);
             break;
         case CLOCK_REALTIME:
-            ret = gettimeofday(&tv, NULL);
+            ret = vlc__get_realtime(&tv);
             break;
         default:
             errno = EINVAL;

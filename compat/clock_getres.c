@@ -36,7 +36,7 @@ int clock_getres(clockid_t clock_id, struct timespec *tp)
     switch (clock_id) {
         case CLOCK_MONOTONIC:
         case CLOCK_REALTIME:
-            // For realtime, it is using gettimeofday and for
+            // For realtime, it is using timespec_get/time and for
             // the monotonic time it is relative to the system
             // boot time. Both of these use timeval, which has
             // at best microsecond precision.

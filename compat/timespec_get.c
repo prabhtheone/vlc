@@ -49,9 +49,6 @@ int timespec_get(struct timespec *ts, int base)
 #ifndef _POSIX_TIMERS
 #define _POSIX_TIMERS (-1)
 #endif
-#if (_POSIX_TIMERS <= 0)
-# include <sys/time.h> /* gettimeofday() */
-#endif
 
 int timespec_get(struct timespec *ts, int base)
 {
@@ -64,12 +61,12 @@ int timespec_get(struct timespec *ts, int base)
 #endif
 #if (_POSIX_TIMERS <= 0)
         {
-            struct timeval tv;
+            const time_t t = time(NULL);
 
-            if (gettimeofday(&tv, NULL) == 0)
+            if (t != (time_t)-1)
             {
-                ts->tv_sec = tv.tv_sec;
-                ts->tv_nsec = tv.tv_usec * 1000;
+                ts->tv_sec = t;
+                ts->tv_nsec = 0;
                 break;
             }
         }
